@@ -1,3 +1,5 @@
+import os
+
 import requests
 from bs4 import BeautifulSoup as BSoup
 from django.http import HttpResponse
@@ -9,9 +11,9 @@ from .utils import *
 
 
 def scrape(request):
-    print("inside scrape all")
     session = requests.Session()
     session.headers = {"User-Agent": "Googlebot/2.1 (+http://www.google.com/bot.html)"}
+
     for newsSite in NewsSite.objects.all():
         print(f"Currently working on: {newsSite.name}")
         url = newsSite.url
@@ -19,328 +21,48 @@ def scrape(request):
         soup = BSoup(content, "html.parser")
         News = soup.find_all(newsSite.tag, {"class": newsSite.htmlClass})
 
-        # Jutarnji list parsing
-        if newsSite.name == JUTARNJI:
-            for i, article in enumerate(News):
-                print(f"{JUTARNJI} article {i}...")
-                with open(f"testData/jutarnji/article_{i}.html", "w") as file:
-                    file.write(str(article))
+        for i, article in enumerate(News):
+            print(f"{newsSite.name} article {i}...")
+            data_dir = f"testData/{newsSite.name.lower()}"
+            if not os.path.exists(data_dir):
+                os.mkdir(data_dir)
+            with open(f"{data_dir}/article_{i}.html", "w") as file:
+                file.write(str(article))
 
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = article.find_all("h2")[0].contents[0]
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
+            main = article if newsSite.name == TPORTAL else article.find_all("a")[0]
+            link = newsSite.hrefPrefix + main["href"]
+            if main.find("img"):
+                image_src = str(
+                    main.find("img")["data-src" if newsSite.name == TPORTAL else "src"]
+                )
+                if not image_src.startswith("https"):
+                    image_src = newsSite.hrefPrefix + image_src
+            else:
+                image_src = "https://picsum.photos/200"
+            if "title" in main.attrs:
+                title = main["title"]
+            else:
+                title = (
+                    article.find_all(
+                        "h2"
+                        if newsSite.name == JUTARNJI
+                        else ("h4" if newsSite.name == N1 else "h3")
+                    )[0]
+                    .contents[0]
+                    .text
+                )
 
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
+            headlines = Headline.objects.filter(url=link, title=title)
+            if headlines.count():
+                continue
 
-        # Večernji list parsing
-        if newsSite.name == VECERNJI:
-            for i, article in enumerate(News):
-                print(f"{VECERNJI} article {i}...")
-                with open(f"testData/vecernji/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = article.find_all("h3")[0].contents[0]
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # Index parsing
-        if newsSite.name == INDEX:
-            for i, article in enumerate(News):
-                print(f"{INDEX} article {i}...")
-                with open(f"testData/index/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[1]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    content = main.find_all("div", {"class": "content"})[0]
-                    title = content.find_all("h3")[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # Net parsing
-        if newsSite.name == NET:
-            for i, article in enumerate(News):
-                print(f"{NET} article {i}...")
-                with open(f"testData/net/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = main.find_all("h2", {"id": "article_card_title"})[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # HRT parsing
-        if newsSite.name == HRT:
-            for i, article in enumerate(News):
-                print(f"{HRT} article {i}...")
-                with open(f"testData/hrt/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = article.find_all("h3")[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # 24sata parsing
-        if newsSite.name == SATA24:
-            for i, article in enumerate(News):
-                print(f"{SATA24} article {i}...")
-                with open(f"testData/sata24/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[1]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    content = main.find_all("div", {"class": "content"})[0]
-                    title = content.find_all("h3")[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # RTL parsing
-        if newsSite.name == RTL:
-            for i, article in enumerate(News):
-                print(f"{RTL} article {i}...")
-                with open(f"testData/rtl/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = main.find_all("h1", {"id": "article_card_title"})[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # NOVATV parsing
-        if newsSite.name == NOVATV:
-            for i, article in enumerate(News):
-                print(f"{NOVATV} article {i}...")
-                with open(f"testData/novatv/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = main.find_all("h3", {"class": "title"})[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # N1 parsing
-        if newsSite.name == N1:
-            for i, article in enumerate(News):
-                print(f"{N1} article {i}...")
-                with open(f"testData/n1/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article.find_all("a")[0]
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = article.find_all(
-                        "h4", {"class": "uc-block-post-grid-title"}
-                    )[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
-
-        # TPORTAL parsing
-        if newsSite.name == TPORTAL:
-            for i, article in enumerate(News):
-                print(f"{TPORTAL} article {i}...")
-                with open(f"testData/tportal/article_{i}.html", "w") as file:
-                    file.write(str(article))
-
-                main = article
-                link = newsSite.hrefPrefix + main["href"]
-                if main.find("img"):
-                    image_src = str(main.find("img")["data-src"])
-                    if not image_src.startswith("https"):
-                        image_src = newsSite.hrefPrefix + image_src
-                else:
-                    image_src = "https://picsum.photos/200"
-                if "title" in main.attrs:
-                    title = main["title"]
-                else:
-                    title = main.find_all("h3", {"class": "title"})[0].text
-
-                headlines = Headline.objects.filter(url=link, title=title)
-                if headlines.count():
-                    continue
-
-                new_headline = Headline()
-                new_headline.title = title
-                new_headline.url = link
-                new_headline.image = image_src
-                new_headline.news_site = newsSite
-                categorise(new_headline, newsSite)
-                new_headline.save()
+            new_headline = Headline()
+            new_headline.title = title
+            new_headline.url = link
+            new_headline.image = image_src
+            new_headline.news_site = newsSite
+            categorise(new_headline, newsSite)
+            new_headline.save()
     return redirect("../")
 
 
