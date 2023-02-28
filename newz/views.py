@@ -28,15 +28,6 @@ def getCategoryCoverage():
 
     df = pd.DataFrame(data)
 
-    # Print the DataFrame to check if it contains any data
-    print(df)
-    print(len(df))
-
-    # Check if the data types of the columns are correct
-    print(df.dtypes)
-
-    print(len(NewsSite.objects.all()))
-
     pivot_table = df.pivot(
         index="category", columns="news_site__name", values="count"
     ).fillna(0)
@@ -48,13 +39,23 @@ def getCategoryCoverage():
 
     # Loop over the categories and plot a bar chart for each category
     for i, category in enumerate(categories):
-        if category in pivot_table.columns:
-            plot = pivot_table[category].plot(kind="bar", legend=False, ax=axs[i])
-            plot.set_title(category)
-            plot.set_xlabel("News Sites")
-            plot.set_ylabel("Shares")
+        # if category in pivot_table.columns:
+        plot = pivot_table.loc[category].plot(kind="bar", legend=False, ax=axs[i])
+        if i < len(categories) - 1:
+            plot.set_xticklabels([])
+        plot.set_title(category, pad=10)
+        plot.set_xlabel("")
+        plot.set_ylabel("Broj")
 
     # Adjust the layout of the subplots
+    plt.subplots_adjust(
+        left=0.125,
+        right=0.9,
+        bottom=0.1,
+        top=0.9,
+        wspace=0.5,
+        hspace=0.5,
+    )
     plt.tight_layout()
 
     buffer = BytesIO()
