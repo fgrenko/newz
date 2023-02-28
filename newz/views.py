@@ -1,5 +1,8 @@
+import base64
 import os
+from io import BytesIO
 
+import matplotlib.pyplot as plt
 import requests
 from bs4 import BeautifulSoup as BSoup
 from django.http import HttpResponse
@@ -9,13 +12,7 @@ from newz.models import Headline, NewsSite
 
 from .utils import *
 
-import matplotlib.pyplot as plt
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from io import BytesIO
 
-
-@csrf_exempt
 def plot(request):
     # Generate the data to plot
     x = [1, 2, 3, 4, 5]
@@ -25,14 +22,23 @@ def plot(request):
     fig, ax = plt.subplots()
     ax.plot(x, y)
 
+    plt.savefig("plot_test.png")
+
     # Save the figure to a byte buffer
     buffer = BytesIO()
-    fig.savefig(buffer, format="png")
+    plt.savefig(buffer, format="png")
     buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+
+    graphic = base64.b64encode(image_png)
+    graphic = graphic.decode("utf-8")
 
     # Return the buffer as an HTTP response
-    response = HttpResponse(buffer, content_type="image/png")
-    return response
+    # response = HttpResponse(buffer, content_type="image/png")
+    # return response
+    context = {"plot_url": "data:image/png;base64," + graphic}
+    return render(request, "plots.html", context)
 
 
 def resetHeadline(request):
