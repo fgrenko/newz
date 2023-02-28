@@ -9,6 +9,31 @@ from newz.models import Headline, NewsSite
 
 from .utils import *
 
+import matplotlib.pyplot as plt
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from io import BytesIO
+
+
+@csrf_exempt
+def plot(request):
+    # Generate the data to plot
+    x = [1, 2, 3, 4, 5]
+    y = [1, 4, 9, 16, 25]
+
+    # Create the Matplotlib figure
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+
+    # Save the figure to a byte buffer
+    buffer = BytesIO()
+    fig.savefig(buffer, format="png")
+    buffer.seek(0)
+
+    # Return the buffer as an HTTP response
+    response = HttpResponse(buffer, content_type="image/png")
+    return response
+
 
 def resetHeadline(request):
     Headline.objects.all().delete()
