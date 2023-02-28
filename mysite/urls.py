@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.urls import include, path
-from newz.views import scrape, scrapeAll, news_list
+
+from newz.views import news_list, scrape
 
 urlpatterns = [
-    path('scrape/', scrape, name="scrape"),
-    path('scrape-all/', scrapeAll, name="scrapeAll"),
-    path('', news_list, name="home"),
-    path('admin/', admin.site.urls),
+    path("scrape/", scrape, name="scrape"),
+    path("", news_list, name="home"),
+    path("admin/", admin.site.urls),
 ]
