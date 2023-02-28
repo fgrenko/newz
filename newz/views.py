@@ -1,10 +1,13 @@
 import base64
+import math
 import os
 from io import BytesIO
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup as BSoup
+from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
@@ -13,7 +16,112 @@ from newz.models import Headline, NewsSite
 from .utils import *
 
 
-def plot(request):
+def getCategoryCoverage():
+    data = (
+        Headline.objects.all()
+        .values("news_site__name", "category")
+        .annotate(count=models.Count("id"))
+    )
+
+    for headline in data:
+        print(headline)
+
+    df = pd.DataFrame(data)
+
+    # Print the DataFrame to check if it contains any data
+    print(df)
+    print(len(df))
+
+    # Check if the data types of the columns are correct
+    print(df.dtypes)
+
+    print(len(NewsSite.objects.all()))
+
+    pivot_table = df.pivot(
+        index="category", columns="news_site__name", values="count"
+    ).fillna(0)
+
+    print(pivot_table)
+
+    # Create a subplots grid with a plot for each category
+    fig, axs = plt.subplots(nrows=len(categories), figsize=(10, 20))
+
+    # Loop over the categories and plot a bar chart for each category
+    for i, category in enumerate(categories):
+        if category in pivot_table.columns:
+            plot = pivot_table[category].plot(kind="bar", legend=False, ax=axs[i])
+            plot.set_title(category)
+            plot.set_xlabel("News Sites")
+            plot.set_ylabel("Shares")
+
+    # Adjust the layout of the subplots
+    plt.tight_layout()
+
+    buffer = BytesIO()
+    plt.savefig(buffer, format="png", bbox_inches="tight")
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+
+    data_dir = f"testData/images"
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+    plt.savefig(f"{data_dir}/categoryCoverage.png", bbox_inches="tight")
+
+    graphic = base64.b64encode(image_png)
+    graphic = graphic.decode("utf-8")
+
+    return graphic
+
+
+def getCategorySharePlot():
+    data = (
+        Headline.objects.all()
+        .values("news_site__name", "category")
+        .annotate(count=models.Count("id"))
+    )
+    df = pd.DataFrame(data)
+
+    print(len(NewsSite.objects.all()))
+
+    pivot_table = df.pivot(
+        index="category", columns="news_site__name", values="count"
+    ).fillna(0)
+
+    normalized_table = pivot_table.div(pivot_table.sum(axis=1), axis=0)
+
+    num_cols = 2
+    num_rows = math.ceil(len(NewsSite.objects.all()) / num_cols)
+    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(16, 16))
+
+    for i, (colname, coldata) in enumerate(normalized_table.iteritems()):
+        ax = axes[i // num_cols, i % num_cols]
+        coldata.plot(
+            kind="barh", stacked=True, ax=ax, color=plt.cm.get_cmap("tab20").colors
+        )
+        ax.set_title(colname)
+        ax.set_xlabel("Udio")
+
+    plt.tight_layout()
+
+    buffer = BytesIO()
+    plt.savefig(buffer, format="png", bbox_inches="tight")
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+
+    data_dir = f"testData/images"
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+    plt.savefig(f"{data_dir}/categoryShare.png", bbox_inches="tight")
+
+    graphic = base64.b64encode(image_png)
+    graphic = graphic.decode("utf-8")
+
+    return graphic
+
+
+def getCategoryCount():
     data = Headline.objects.all()
 
     categoryCounts = {}
@@ -42,11 +150,18 @@ def plot(request):
         os.mkdir(data_dir)
     plt.savefig(f"{data_dir}/categoryCounts.png", bbox_inches="tight")
 
-    categoryGraphic = base64.b64encode(image_png)
-    categoryGraphic = categoryGraphic.decode("utf-8")
+    graphic = base64.b64encode(image_png)
+    graphic = graphic.decode("utf-8")
+
+    return graphic
+
+
+def plot(request):
 
     context = {
-        "categoryCounts": "data:image/png;base64," + categoryGraphic,
+        "categoryCounts": "data:image/png;base64," + getCategoryCount(),
+        "categoryShare": "data:image/png;base64," + getCategorySharePlot(),
+        "categorycoverage": "data:image/png;base64," + getCategoryCoverage(),
     }
     return render(request, "plots.html", context)
 
@@ -198,6 +313,7 @@ def categorise(headline: Headline, newsSite: NewsSite):
         or category == "svijet"
         or category == "manjine"
         or category == "video"
+        or category == "rijeka"
     ):
         headline.category = "vijesti"
     elif category == "novac" or category == "gospodarstvo":
@@ -214,6 +330,7 @@ def categorise(headline: Headline, newsSite: NewsSite):
         or category == "hot"
         or category == "super1"
         or category == "zvijezde"
+        or category == "ljubimci"
     ):
         headline.category = "showbusiness i scena"
     elif (
@@ -225,6 +342,7 @@ def categorise(headline: Headline, newsSite: NewsSite):
         or category == "mame"
         or category == "food"
         or category == "bolja-ja"
+        or category == "zdravlje"
     ):
         headline.category = "lifestyle"
     elif category == "moda" or category == "ljepota":
