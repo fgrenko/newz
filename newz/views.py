@@ -14,30 +14,40 @@ from .utils import *
 
 
 def plot(request):
-    # Generate the data to plot
-    x = [1, 2, 3, 4, 5]
-    y = [1, 4, 9, 16, 25]
+    data = Headline.objects.all()
 
-    # Create the Matplotlib figure
-    fig, ax = plt.subplots()
-    ax.plot(x, y)
+    categoryCounts = {}
 
-    plt.savefig("plot_test.png")
+    for category in categories:
+        categoryCounts[category] = len(
+            [obj for obj in data if obj.category == category]
+        )
 
-    # Save the figure to a byte buffer
+    print(categoryCounts)
+
+    plt.bar(categoryCounts.keys(), categoryCounts.values())
+    plt.title("Broj po kategoriji")
+    plt.xlabel("Kategorije")
+    plt.ylabel("Broj")
+    plt.xticks(rotation="vertical")
+
     buffer = BytesIO()
-    plt.savefig(buffer, format="png")
+    plt.savefig(buffer, format="png", bbox_inches="tight")
     buffer.seek(0)
     image_png = buffer.getvalue()
     buffer.close()
 
-    graphic = base64.b64encode(image_png)
-    graphic = graphic.decode("utf-8")
+    data_dir = f"testData/images"
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+    plt.savefig(f"{data_dir}/categoryCounts.png", bbox_inches="tight")
 
-    # Return the buffer as an HTTP response
-    # response = HttpResponse(buffer, content_type="image/png")
-    # return response
-    context = {"plot_url": "data:image/png;base64," + graphic}
+    categoryGraphic = base64.b64encode(image_png)
+    categoryGraphic = categoryGraphic.decode("utf-8")
+
+    context = {
+        "categoryCounts": "data:image/png;base64," + categoryGraphic,
+    }
     return render(request, "plots.html", context)
 
 
