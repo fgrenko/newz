@@ -191,8 +191,8 @@ def scrape(request):
             link = (
                 (newsSite.hrefPrefix + main["href"])
                 if not (
-                        str(main["href"]).startswith("http")
-                        or str(main["href"]).startswith("//www")
+                    str(main["href"]).startswith("http")
+                    or str(main["href"]).startswith("//www")
                 )
                 else str(main["href"])
             )
@@ -230,11 +230,14 @@ def scrape(request):
                 continue
 
             print(f"New {newsSite.name} article {i}...")
-            data_dir = f"testData/{newsSite.name.lower()}"
-            if not os.path.exists(data_dir):
-                os.mkdir(data_dir)
-            with open(f"{data_dir}/article_{i}.html", "w") as file:
-                file.write(str(article))
+            try:
+                data_dir = f"testData/{newsSite.name.lower()}"
+                if not os.path.exists(data_dir):
+                    os.mkdir(data_dir)
+                with open(f"{data_dir}/article_{i}.html", "w") as file:
+                    file.write(str(article))
+            except (Exception):
+                print(Exception)
 
             new_headline = Headline()
             new_headline.title = title
@@ -252,7 +255,9 @@ def scrape(request):
 def news_list(request):
     allObject = [i for i in Headline.objects.all()]
 
-    if request.method == 'POST':
+    print(request)
+
+    if request.method == "POST":
         # create a form instance and populate it with data from the request:
         form = FilterForm(request.POST)
         # check whether it's valid:
@@ -261,12 +266,12 @@ def news_list(request):
             # ...
             # redirect to a new URL:
             filters = Q()
-            news_site = form.data.get('news_site')
-            cancel = form.data.get('cancel')
-            category = form.data.get('category')
+            news_site = form.data.get("news_site")
+            cancel = form.data.get("cancel")
+            category = form.data.get("category")
 
             if cancel:
-                return HttpResponseRedirect('/')
+                return HttpResponseRedirect("/")
             if news_site:
                 filters &= Q(news_site=news_site)
             if category:
@@ -278,11 +283,11 @@ def news_list(request):
     else:
         form = FilterForm()
 
-    if 'headlines' not in locals():
+    if "headlines" not in locals():
         headlines = Headline.objects.all()[::-1]
 
     paginator = Paginator(headlines, 21)
-    page = request.GET.get('page', 1)
+    page = request.GET.get("page", 1)
     object_list = paginator.page(page)
     page_range = paginator.get_elided_page_range(number=page)
 
@@ -323,6 +328,10 @@ def news_list(request):
         "form": form,
     }
 
+    data_dir = "testData"
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+
     return render(request, "home.html", context)
 
 
@@ -334,26 +343,26 @@ def categorise(headline: Headline, newsSite: NewsSite):
         print(f"Greška u {headline.url}")
 
     if (
-            category == "sn"
-            or category == "fightsite"
-            or category == "sport"
-            or category == "fit"
+        category == "sn"
+        or category == "fightsite"
+        or category == "sport"
+        or category == "fit"
     ):
         headline.category = "sport"
     elif (
-            category == "vijesti"
-            or category == "zagreb"
-            or category == "videovijesti"
-            or category == "vijest"
-            or category == "danas"
-            or category == "hrvatska"
-            or category == "regija"
-            or category == "aktualno"
-            or category == "eu"
-            or category == "svijet"
-            or category == "manjine"
-            or category == "video"
-            or category == "rijeka"
+        category == "vijesti"
+        or category == "zagreb"
+        or category == "videovijesti"
+        or category == "vijest"
+        or category == "danas"
+        or category == "hrvatska"
+        or category == "regija"
+        or category == "aktualno"
+        or category == "eu"
+        or category == "svijet"
+        or category == "manjine"
+        or category == "video"
+        or category == "rijeka"
     ):
         headline.category = "vijesti"
     elif category == "novac" or category == "gospodarstvo":
@@ -361,28 +370,28 @@ def categorise(headline: Headline, newsSite: NewsSite):
     elif category == "vaumijau" or category == "native" or category == "webcafe":
         headline.category = "ostalo"
     elif (
-            category == "showbiz"
-            or category == "scena"
-            or category == "show"
-            or category == "showtime"
-            or category == "magazi"
-            or category == "magazin"
-            or category == "hot"
-            or category == "super1"
-            or category == "zvijezde"
-            or category == "ljubimci"
+        category == "showbiz"
+        or category == "scena"
+        or category == "show"
+        or category == "showtime"
+        or category == "magazi"
+        or category == "magazin"
+        or category == "hot"
+        or category == "super1"
+        or category == "zvijezde"
+        or category == "ljubimci"
     ):
         headline.category = "showbusiness i scena"
     elif (
-            category == "lifestyle"
-            or category == "chill"
-            or category == "shopping"
-            or category == "zivot"
-            or category == "pitanje-zdravlja"
-            or category == "mame"
-            or category == "food"
-            or category == "bolja-ja"
-            or category == "zdravlje"
+        category == "lifestyle"
+        or category == "chill"
+        or category == "shopping"
+        or category == "zivot"
+        or category == "pitanje-zdravlja"
+        or category == "mame"
+        or category == "food"
+        or category == "bolja-ja"
+        or category == "zdravlje"
     ):
         headline.category = "lifestyle"
     elif category == "moda" or category == "ljepota":
@@ -392,12 +401,12 @@ def categorise(headline: Headline, newsSite: NewsSite):
     elif category == "biznis":
         headline.category = "business"
     elif (
-            category == "techsci"
-            or category == "autoklub"
-            or category == "autozona"
-            or category == "techno"
-            or category == "auto"
-            or category == "tehno"
+        category == "techsci"
+        or category == "autoklub"
+        or category == "autozona"
+        or category == "techno"
+        or category == "auto"
+        or category == "tehno"
     ):
         headline.category = "tech i automobili"
     elif category == "crna-kronika" or category == "politika-kriminal":

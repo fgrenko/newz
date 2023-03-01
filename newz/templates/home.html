@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-
     <head>
         <title></title>
         <link
@@ -11,71 +9,96 @@
             integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
             crossorigin="anonymous"
         />
+        <link rel="stylesheet" href="{% static 'home.css' %}" />
     </head>
     <body>
-        <div class="jumbotron">
+        <div class="loader" id="loader">
+            <div class="lds-grid">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+
+        <div class="jumbotron header">
             <form>
                 <center>
                     <h1>Vijesti</h1>
-                    <a href="{% url 'scrape' %}" class="btn btn-success">Dobavi sve nove vijesti</a>
-                    <a href="{% url 'plots' %}" class="btn btn-success">Pregled statistike</a>
-                    <a href="{% url 'resetHeadline' %}" class="btn btn-success">Resetiraj podatke</a>
+                    <div class="d-flex action-buttons">
+                        <a onClick="activateLoader();" href="{% url 'scrape' %}" class="btn btn-success popup-box get-new shadow-sm"
+                            >Dobavi sve nove vijesti<span class="get-new__tooltip">Dohvat novih vijesti - ne utječe na postojeće</span></a
+                        >
+                        <a onClick="activateLoader();" href="{% url 'plots' %}" class="btn btn-success popup-box statistic shadow-sm"
+                            >Pregled statistike<span class="statistic__tooltip">Pregled statisitke - obrada traje nekoliko sekundi</span></a
+                        >
+                        <a
+                            onClick="activateLoader();"
+                            href="{% url 'resetHeadline' %}"
+                            class="btn btn-danger popup-box reset-all-button d-flex align-items-center shadow-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="reset-all-button__icon me-2">
+                                <!--! Font Awesome Pro 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+                                <path
+                                    d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"
+                                />
+                            </svg>
+                            <div>Resetiraj podatke</div>
+                            <span class="reset-all-button__tooltip">OPEZ! - ovo će obrisati sve stare vijesti</span>
+                        </a>
+                    </div>
                 </center>
             </form>
         </div>
 
-        <div>
-            <h4>Filtriraj</h4>
+        <div class="w-75 mx-auto mb-4">
+            <h4 class="mb-3">Filtriraj</h4>
             {% include 'filter.html' %}
-
         </div>
 
-        <div class="card-columns p-2" style="padding: 10px; margin: 20px">
+        <div class="card-columns m-2 mb-4 news-content">
             {% for object in object_list %}
-                <div class="card p-4" style="border: 5px black solid">
-                    <span>{{ object.news_site.name }} - {{ object.category|capfirst }}</span>
-                    {% if object.image %}
-                    <img class="card-img-top" src="{{ object.image }}" />
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <div class="card-body">
-                                <a href="{{object.url}}" target="_blank">
-                                    <h5 class="card-title">{{object.title}}</h5>
-                                </a>
-                            </div>
-                        </h5>
-                    </div>
+            <div class="card news-content__item shadow p-2 d-flex align-items-center w-25 m-3" type="button" onClick="window.location.href='{{object.url}}';">
+                <h5 class="text-center p-2">{{ object.news_site.name }} - {{ object.category|capfirst }}</h5>
+                {% if object.image %}
+                <img class="card-img-top" src="{{ object.image }}" />
+                {% endif %}
+
+                <div class="card-body text-center d-flex">
+                    <h6 class="card-title m-auto">{{object.title}}</h6>
                 </div>
+            </div>
             {% endfor %}
         </div>
 
         <div class="container">
             <ul class="pagination a">
                 {% if object_list.has_previous %}
-                    <li><a href="?page={{ object_list.previous_page_number }}">&laquo;</a></li>
+                <li><a href="?page={{ object_list.previous_page_number }}">&laquo;</a></li>
                 {% else %}
-                    <li class="disabled"><span>&laquo;</span></li>
-                {% endif %}
-                {% for i in page_range %}
-                    {% if object_list.number == i %}
-                        <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-                    {% elif i == '…' %}
-                        {{ i }}
-                    {% else %}
-                        <li><a href="?page={{ i }}">{{ i }}</a></li>
-                    {% endif %}
-                {% endfor %}
-                {% if object_list.has_next %}
-                    <li><a href="?page={{ object_list.next_page_number }}">&raquo;</a></li>
+                <li class="disabled"><span>&laquo;</span></li>
+                {% endif %} {% for i in page_range %} {% if object_list.number == i %}
+                <li class="active">
+                    <span>{{ i }} <span class="sr-only">(current)</span></span>
+                </li>
+                {% elif i == '…' %}
+                <li>{{ i }}</li>
                 {% else %}
-                    <li class="disabled"><span>&raquo;</span></li>
+                <li><a href="?page={{ i }}" class="popup-box">{{ i }}</a></li>
+                {% endif %} {% endfor %} {% if object_list.has_next %}
+                <li><a href="?page={{ object_list.next_page_number }}">&raquo;</a></li>
+                {% else %}
+                <li class="disabled"><span>&raquo;</span></li>
                 {% endif %}
             </ul>
         </div>
 
-
-        <script></script>
+        <script src="{% static 'home.js' %}"></script>
         <script
             src="http://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
