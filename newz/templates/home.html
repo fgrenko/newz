@@ -79,7 +79,7 @@
         <div class="container">
             <ul class="pagination a">
                 {% if object_list.has_previous %}
-                <li><a href="?page={{ object_list.previous_page_number }}">&laquo;</a></li>
+                <li><a onClick="activateLoader();" href="?page={{ object_list.previous_page_number }}">&laquo;</a></li>
                 {% else %}
                 <li class="disabled"><span>&laquo;</span></li>
                 {% endif %} {% for i in page_range %} {% if object_list.number == i %}
@@ -89,9 +89,9 @@
                 {% elif i == '…' %}
                 <li>{{ i }}</li>
                 {% else %}
-                <li><a href="?page={{ i }}" class="popup-box">{{ i }}</a></li>
+                <li><a onClick="activateLoader();" href="?page={{ i }}" class="popup-box">{{ i }}</a></li>
                 {% endif %} {% endfor %} {% if object_list.has_next %}
-                <li><a href="?page={{ object_list.next_page_number }}">&raquo;</a></li>
+                <li><a onClick="activateLoader();" href="?page={{ object_list.next_page_number }}">&raquo;</a></li>
                 {% else %}
                 <li class="disabled"><span>&raquo;</span></li>
                 {% endif %}
