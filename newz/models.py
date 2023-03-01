@@ -9,6 +9,9 @@ class NewsSite(models.Model):
     htmlClass = models.CharField(max_length=100, blank=True)
     locale = models.CharField(max_length=2, default='hr')
 
+    def __str__(self):
+        return self.name
+
 
 class Headline(models.Model):
     title = models.CharField(max_length=200)

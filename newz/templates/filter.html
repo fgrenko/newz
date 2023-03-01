@@ -1,0 +1,6 @@
+<form action="" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" class="btn" value="Filtriraj">
+    <input type="submit" class="btn btn-danger" value="Poništi filter" name="cancel"/>
+</form>
