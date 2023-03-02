@@ -1,10 +1,10 @@
-$danger: #c82333;
+$danger: #c94c4c; // #c82333;
 $white: #fff;
-$warning: #ffc107;
+$warning: #dbc858; //#ffc107;
 $black: #000;
-$primary: rgb(111, 111, 231);
-$success: #28a745;
-$primary-shadow: rgb(62, 62, 250);
+$primary: #6f6fe7; // rgb(111, 111, 231);
+$success: #588b51; // #28a745;
+$primary-shadow: #3e3efa; // rgb(62, 62, 250);
 $black-shadow: #222;
 
 .pagination {
@@ -289,5 +289,20 @@ li {
     }
     50% {
         opacity: 0.5;
+    }
+}
+
+.btn {
+    &-primary {
+        background-color: $primary;
+        border-color: $primary;
+    }
+    &-danger {
+        background-color: $danger;
+        border-color: $danger;
+    }
+    &-success {
+        background-color: $success;
+        border-color: $success;
     }
 }

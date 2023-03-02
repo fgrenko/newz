@@ -26,11 +26,6 @@ def getCategoryCoverage():
         .annotate(count=models.Count("id"))
     )
 
-    data_dir = f"testData/images"
-    if not os.path.exists(data_dir):
-        os.mkdir(data_dir)
-    plt.savefig(f"{data_dir}/categoryCoverage.png", bbox_inches="tight")
-
     for headline in data:
         print(headline)
 
@@ -71,6 +66,11 @@ def getCategoryCoverage():
     buffer.seek(0)
     image_png = buffer.getvalue()
     buffer.close()
+
+    data_dir = f"testData/images"
+    if not os.path.exists(data_dir):
+        os.mkdir(data_dir)
+    plt.savefig(f"{data_dir}/categoryCoverage.png", bbox_inches="tight")
 
     graphic = base64.b64encode(image_png)
     graphic = graphic.decode("utf-8")
