@@ -178,6 +178,14 @@ li {
     &-sm {
         box-shadow: 3px 4px 10px $primary-shadow;
     }
+
+    &-popup {
+        &:hover,
+        :focus {
+            font-size: 1.02rem;
+            box-shadow: 5px 6px 12px $black-shadow;
+        }
+    }
 }
 
 .popup-box {

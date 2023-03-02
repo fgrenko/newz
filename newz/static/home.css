@@ -148,6 +148,11 @@ li.active {
 .shadow-sm {
   box-shadow: 3px 4px 10px rgb(62, 62, 250);
 }
+.shadow-popup:hover,
+.shadow-popup :focus {
+  font-size: 1.02rem;
+  box-shadow: 5px 6px 12px #222;
+}
 
 .popup-box {
   transition: 0.2s ease;
