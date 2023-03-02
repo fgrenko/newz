@@ -75,6 +75,8 @@ def getCategoryCoverage():
     graphic = base64.b64encode(image_png)
     graphic = graphic.decode("utf-8")
 
+    plt.clf()
+
     return graphic
 
 
@@ -122,6 +124,8 @@ def getCategorySharePlot():
     graphic = base64.b64encode(image_png)
     graphic = graphic.decode("utf-8")
 
+    plt.clf()
+
     return graphic
 
 
@@ -156,6 +160,8 @@ def getCategoryCount():
 
     graphic = base64.b64encode(image_png)
     graphic = graphic.decode("utf-8")
+
+    plt.clf()
 
     return graphic
 
