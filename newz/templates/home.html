@@ -31,16 +31,16 @@
                 <center>
                     <h1>Vijesti</h1>
                     <div class="d-flex action-buttons">
-                        <a onClick="activateLoader();" href="{% url 'scrape' %}" class="btn btn-success popup-box get-new shadow-sm"
+                        <a onClick="activateLoader();" href="{% url 'scrape' %}" class="btn btn-success get-new shadow-sm shadow-popup"
                             >Dobavi sve nove vijesti<span class="get-new__tooltip">Dohvat novih vijesti - ne utječe na postojeće</span></a
                         >
-                        <a onClick="activateLoader();" href="{% url 'plots' %}" class="btn btn-success popup-box statistic shadow-sm"
+                        <a onClick="activateLoader();" href="{% url 'plots' %}" class="btn btn-success statistic shadow-sm shadow-popup"
                             >Pregled statistike<span class="statistic__tooltip">Pregled statisitke - obrada traje nekoliko sekundi</span></a
                         >
                         <a
                             onClick="activateLoader();"
                             href="{% url 'resetHeadline' %}"
-                            class="btn btn-danger popup-box reset-all-button d-flex align-items-center shadow-sm"
+                            class="btn btn-danger reset-all-button d-flex align-items-center shadow-sm shadow-popup"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="reset-all-button__icon me-2">
                                 <!--! Font Awesome Pro 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
