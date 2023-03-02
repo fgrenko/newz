@@ -187,7 +187,11 @@ def scrape(request):
 
         for i, article in enumerate(News):
 
-            main = article if newsSite.name == TPORTAL else article.find_all("a")[0]
+            main = (
+                article
+                if newsSite.name == TPORTAL
+                else article.find_all("a")[1 if newsSite.name == INDEX else 0]
+            )
             link = (
                 (newsSite.hrefPrefix + main["href"])
                 if not (
@@ -207,15 +211,15 @@ def scrape(request):
             if "title" in main.attrs:
                 title = main["title"]
             else:
-                title = (
-                    article.find_all(
-                        "h2"
-                        if newsSite.name == JUTARNJI
-                        else ("h4" if newsSite.name == N1 else "h3")
-                    )[0]
-                    .contents[0]
-                    .text
-                )
+
+                if newsSite.name == N1:
+                    title = article.find_all("h4")[0].find_all("a")[0].contents[0].text
+                else:
+                    title = (
+                        article.find_all("h2" if newsSite.name == JUTARNJI else "h3")[0]
+                        .contents[0]
+                        .text
+                    )
 
             headlines = Headline.objects.filter(url=link, title=title)
             if headlines.count():

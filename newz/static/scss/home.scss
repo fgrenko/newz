@@ -51,7 +51,7 @@ li {
         transition: linear 0.5s;
 
         .reset-all-button__tooltip {
-            opacity: 1;
+            opacity: 0.9;
             transition: opacity 0.2s ease-in;
             visibility: visible;
             color: $white;
