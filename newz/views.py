@@ -141,6 +141,7 @@ def getCategoryCount():
 
     print(categoryCounts)
 
+    plt.figure(figsize=(10, 6))
     plt.bar(categoryCounts.keys(), categoryCounts.values())
     plt.title("Broj po kategoriji")
     plt.xlabel("Kategorije")
