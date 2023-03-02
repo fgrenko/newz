@@ -66,7 +66,7 @@
             <div class="card news-content__item shadow p-2 d-flex align-items-center w-25 m-3" type="button" onClick="window.location.href='{{object.url}}';">
                 <h5 class="text-center p-2">{{ object.news_site.name }} - {{ object.category|capfirst }}</h5>
                 {% if object.image %}
-                <img class="card-img-top" src="{{ object.image }}" />
+                <img class="card-img-top" src="{{ object.image }}" alt="" />
                 {% endif %}
 
                 <div class="card-body text-center d-flex">
